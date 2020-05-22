@@ -69,7 +69,6 @@ def rk_coeff_tf(C):
 
     Returns
       rk : a scalar Tensor
-
     """
 
     # TODO: throw error if confusion matrix is not square
@@ -99,7 +98,7 @@ def rk_coeff_tf(C):
     denominator_2 = tf.dtypes.cast(denominator_2, float_type)
     
     # Terms inside the denominator must not be negative; if they are
-    # it's likely due to limited precision
+    # it's likely due to limited precision (we hope)
     zero = tf.dtypes.cast(0.0, float_type)
     denominator_1 = tf.math.maximum(zero, denominator_1)
     denominator_2 = tf.math.maximum(zero, denominator_2)
@@ -111,20 +110,12 @@ def rk_coeff_tf(C):
 
     # NB: The limit of the original Matthews correlation coefficient
     # (MCC) is zero as each of the terms in that denominator's sums
-    # approach zero from the right; cf. Baldi et al. (2000),
+    # approach zero from the right; cf. p. 415 of Baldi et al. (2000),
     # Bioinformatics Review 16(5), 412--424. Following a similar (but
     # not yet theoretically proven) approach here, we avoid dividing
-    # by zero as follows.
+    # by zero and give a quotient of zero.
 
-    # First, check whether the denominator is zero
-    is_bottom_zero = tf.equal(denominator, 0)
-    # Next, we modify it ONLY if zero by adding a 1 if so
-    safe_denominator = denominator + tf.cast(is_bottom_zero, float_type)
-    # Now we can safely divide, because there is no zero in the denominator
-    safe_rk = numerator / safe_denominator
-    # Last, we need to restore a zero where there should in fact be a zero
-    # (by the argument above)
-    rk = safe_rk * tf.cast(tf.logical_not(is_bottom_zero), float_type)
+    rk = tf.math.divide_no_nan( numerator, denominator )
 
     return rk
 
@@ -163,16 +154,16 @@ def rk_coeff_np(C):
     denominator_2 = Nsq - np.sum(np.matmul(col_sum, col_sum_t))
 
     # Terms inside the denominator must not be negative; if they are
-    # it's likely due to limited precision
+    # it's likely due to limited precision (we hope)
     denominator_1 = np.maximum(0.0, denominator_1)
     denominator_2 = np.maximum(0.0, denominator_2)
 
     # NB: The limit of the original Matthews correlation coefficient
     # (MCC) is zero as each of the terms in that denominator's sums
-    # approach zero from the right; cf. Baldi et al. (2000),
+    # approach zero from the right; cf. p. 415 of Baldi et al. (2000),
     # Bioinformatics Review 16(5), 412--424. Following a similar (but
     # not yet theoretically proven) approach here, we avoid dividing
-    # by zero as follows.
+    # by zero and give a quotient of zero.
 
     if (denominator_1==0 or denominator_2 == 0):
         rk = 0
