@@ -13,6 +13,45 @@ import tensorflow as tf
 import numpy as np
 import math
 
+def soft_confusion_matrix_tf(labels, predictions,
+                             num_classes=None, name=None):
+    """Computes the (soft) confusion matrix from prediction probabilities
+    and labels. 
+
+    The row indices represent the real (ground truth) labels, while
+    the column indices represent the predicted labels.
+
+    Prediction probabilities are accumulated in the confusion matrix rows.
+
+    Let N be batch size and L be the number of class labels.
+
+    Parameters:
+      labels      : 1-D (rank 1) tensor (length N) of ground-truth labels
+                      (indices) in {0,...,L-1} or 2-D (rank 2) NxL tensor
+                      of one-hot encoded labels 
+      predictions : 2-D (rank 2) tensor (size NxL) probabilities for each
+                      class in [0,1]
+      num_classes : Scalar indicating number of class labels [default is 
+                      one more than the max of labels]; may not be used
+                       if labels is rank 2
+
+    Returns:
+      C : LxL matrix of the same type as predictions
+    """
+
+    # TODO: Verify labels and predictions dimensions match
+    
+    if len(labels.get_shape().as_list()) == 2: # must be a better way!
+        # Convert one-hot to raw indices
+        num_classes = tf.shape(labels)[1]
+        labels = tf.argmax(labels, axis=1)
+    elif not num_classes:
+        num_classes = tf.reduce_max(labels)+1
+        
+    C = tf.math.unsorted_segment_sum(predictions, labels, num_classes)
+
+    return C
+
 
 def rk_coeff_tf(C):
 
