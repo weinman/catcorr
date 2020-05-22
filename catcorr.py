@@ -11,7 +11,6 @@
 
 import tensorflow as tf
 import numpy as np
-import math
 
 def soft_confusion_matrix_tf(labels, predictions,
                              num_classes=None, name=None):
