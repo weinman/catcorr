@@ -123,7 +123,7 @@ class TestRkCoeffTensorFlow(unittest.TestCase):
     def tearDown(self):
         self.sess.close()
         
-### CONF
+
 class TestSoftConfusionMatrixTensorFlow(unittest.TestCase):
 
     def setUp(self):

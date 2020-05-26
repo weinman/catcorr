@@ -53,7 +53,6 @@ def soft_confusion_matrix_tf(labels, predictions,
 
 
 def rk_coeff_tf(C):
-
     """
     Calculate Gorodkin's R_K Correlation Coefficient from an KxK
     confusion matrix in TensorFlow.
@@ -83,15 +82,13 @@ def rk_coeff_tf(C):
     # Refer to Eq. (8) in Gorodkin (2004)
     numerator =  N*trace_C - tf.math.reduce_sum(tf.linalg.matmul(C,C))
 
-    # Calculate true and predicated marginals
-    row_sum   = tf.reduce_sum(C, axis=1, keepdims=True) # 1xK
-    row_sum_t = tf.transpose(row_sum)                   # Kx1
-    col_sum   = tf.reduce_sum(C, axis=0, keepdims=True) # Kx1
-    col_sum_t = tf.transpose(col_sum)                   # 1xK
+    # Calculate true and predicted marginals
+    row_sum   = tf.reduce_sum(C, axis=1, keepdims=False)
+    col_sum   = tf.reduce_sum(C, axis=0, keepdims=False)
 
     Nsq = N*N
-    denominator_1 = Nsq - tf.reduce_sum(tf.linalg.matmul(row_sum_t, row_sum))
-    denominator_2 = Nsq - tf.reduce_sum(tf.linalg.matmul(col_sum, col_sum_t))
+    denominator_1 = Nsq - tf.tensordot(row_sum, row_sum, axes=1)
+    denominator_2 = Nsq - tf.tensordot(col_sum, col_sum, axes=1)
 
     numerator     = tf.dtypes.cast(numerator, float_type)
     denominator_1 = tf.dtypes.cast(denominator_1, float_type)
@@ -143,16 +140,15 @@ def rk_coeff_np(C):
     # Refer to Eq. (8) in Gorodkin (2004)
     numerator =  N*trace_C - np.sum(np.matmul(C,C))
 
-    # Calculate true and predicated marginals
-    row_sum   = np.sum(C, axis=1, keepdims=True) # 1xK
-    row_sum_t = row_sum.transpose()              # Kx1
-    col_sum   = np.sum(C, axis=0, keepdims=True) # Kx1
-    col_sum_t = col_sum.transpose()              # 1xK
+    # Calculate true and predicted marginals
+    row_sum   = np.sum(C, axis=1, keepdims=False)
+    col_sum   = np.sum(C, axis=0, keepdims=False)
 
     Nsq = N*N
-    denominator_1 = Nsq - np.sum(np.matmul(row_sum_t, row_sum))
-    denominator_2 = Nsq - np.sum(np.matmul(col_sum, col_sum_t))
+    denominator_1 = Nsq - np.dot(row_sum, row_sum)
+    denominator_2 = Nsq - np.dot(col_sum, col_sum)
 
+    
     # Terms inside the denominator must not be negative; if they are
     # it's likely due to limited precision (we hope)
     denominator_1 = np.maximum(0.0, denominator_1)
