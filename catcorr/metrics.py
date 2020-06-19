@@ -39,9 +39,9 @@ def rk_coeff(labels, predictions, num_classes,
                       of one-hot encoded labels 
       predictions : 2-D (rank 2) tensor (size NxL) probabilities for each
                       class in [0,1]
-      num_classes : An scalar integer value indicating the number of class
-                      labels (length of one side of the confusion matrix
-                      table)
+      num_classes : A scalar integer value (or tensor) indicating the number
+                      of class labels (length of one side of the confusion
+                       matrix table)
     Returns:
       coefficient : A `Tensor` representing the Rk coefficient of the `table`.
       update_op :   An operation that increments the `table` variable
@@ -90,42 +90,64 @@ def rk_coeff(labels, predictions, num_classes,
 
 
 class RkMetric(tf.keras.metrics.Metric):
-    """
-    RkMetric: Stores the confusion matrix as table, which can
+    """RkMetric: Stores the confusion matrix as table, which can
     accumulate values with the update_state method, produce the current
     Rk coefficient with the result method, and reset the confusion matrix
-    accumulator with the reset_states method.
-    """
+    accumulator with the reset_states method."""
+
+    
 
     def __init__(self,
                  num_classes,
-                 name: str ='Rk_Metric',
-                 dtype = None,
+                 name: str ='Rk',
+                 dtype = tf.float32,
+                 from_logits: bool = False,
                  **kwargs ):
+        """RkMetric
+
+        Parameters
+          num_classes : A scalar integer value (or tensor) indicating the 
+                          number of class labels (length of one side of the
+                          confusion matrix table)
+          name        : String description to display with metric value
+          dtype       : Data type to use for storing the confusion matrix
+          from_logits : Boolean Indicating whether to apply a softmax 
+                          operation to the given prediction values before
+                          calculating the confusion matrix
+        """
         super().__init__(name=name, dtype=dtype)
         self.num_classes = num_classes
-        self.table = self.add_weight( "Confusion_matrix",
+        self.from_logits = from_logits
+        self.table = self.add_weight( "confusion_matrix",
                                       shape = [self.num_classes,
                                                self.num_classes],
                                       initializer="zeros",
                                       dtype=self.dtype )
 
-        
+
+    def get_config(self):
+        """config dictionary for serialization protobuffer"""
+        config = super(RkMetric, self).get_config()
+        config.update({"num_classes": self.num_classes,
+                       "from_logits": self.from_logits,
+        })
+        return config
+
+    
     def update_state( self, labels, predictions ):
-        """ 
-        Calculate the batch confusion matrix and add it to the accumulator 
-        table.
+        """ Calculate the batch confusion matrix and add it to the 
+        accumulator table.
 
         Parameters:
-           labels  : 1-D (rank 1) tensor of ground-truth labels
-                      (indices) or 2-D (rank 2) tensor of one-hot encoded
-                      labels (batch dim first)
-           predictions: dict with key 'probabilities' having a 2-D tensor
-                      (batch dim first) of probabilities for each class 
-                      in [0,1]
+           labels      : 1-D (rank 1) tensor of ground-truth labels
+                           (indices) or 2-D (rank 2) tensor of one-hot encoded
+                           labels (batch dim first)
+           predictions : a 2-D tensor of shape (?, num_classes) with the
+                            values (logits or probabilities) for each class 
         """
-        batch_table = catcorr.soft_confusion_matrix(labels,
-                                              predictions['probabilities'])
+        if self.from_logits:
+            predictions = tf.keras.activations.softmax(predictions)
+        batch_table = catcorr.soft_confusion_matrix_tf( labels, predictions )
         batch_table = tf.cast(batch_table, self.dtype)
         self.table.assign_add(batch_table)
 
@@ -137,4 +159,5 @@ class RkMetric(tf.keras.metrics.Metric):
 
     def reset_states(self):
         """Reset confusion matrix to all zeros"""
-        self.table.assign(tf.zeros((self.num_classes, self.num_classes), self.dtype))
+        self.table.assign( tf.zeros( (self.num_classes, self.num_classes),
+                                     self.dtype))
