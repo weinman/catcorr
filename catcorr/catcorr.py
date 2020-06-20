@@ -65,14 +65,18 @@ def soft_confusion_matrix_tf(labels, predictions,
     """
 
     # TODO: Verify labels and predictions dimensions match
-    
-    if len(labels.get_shape().as_list()) == 2: # must be a better way!
+    label_shape = labels.get_shape().as_list()
+    if len(label_shape) == 2 and label_shape[1]!=1: # must be a better way!
         # Convert one-hot to raw indices
-        labels = tf.argmax(labels, axis=1)
-
+        labels = tf.argmax(labels, axis=1) # NB: produces int64 by default
+    else: 
+        # Ensure we're not getting a float (i.e., from Keras [but why??]) 
+        labels = tf.cast(labels, tf.int32)
+        labels = tf.squeeze(labels) # Eliminate the extra dimension 
+    
     # Ensure we have a complete matrix with the correct number of rows
     num_classes = tf.shape(predictions)[1]
-        
+
     C = tf.math.unsorted_segment_sum(predictions, labels, num_classes,
                                      name or 'confusion_matrix')
 
