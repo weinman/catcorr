@@ -1,4 +1,4 @@
-# catcorr.py - A suite of routines to tabulate soft confusion matrices
+# core.py - A suite of routines to tabulate soft confusion matrices
 # and correlations for NumPy and Tensorflow
 
 """
@@ -12,34 +12,6 @@
 import tensorflow as tf
 import numpy as np
 
-def rk_loss_tf(labels, predictions, name=None):
-    """Computes 1-Rk as a loss function between prediction probabilities
-    and labels.
-
-    The row indices represent the real (ground truth) labels, while
-    the column indices represent the predicted labels.
-
-    Prediction probabilities are accumulated in the confusion matrix rows.
-
-    Let N be batch size and L be the number of class labels.
-
-    Parameters:
-      labels      : 1-D (rank 1) tensor (length N) of ground-truth labels
-                      (indices) in {0,...,L-1} or 2-D (rank 2) NxL tensor
-                      of one-hot encoded labels 
-      predictions : 2-D (rank 2) tensor (size NxL) probabilities for each
-                      class in [0,1]
-
-    Returns:
-      loss : Scalar tensor in [0,2]
-    """
-
-    C = soft_confusion_matrix_tf(labels, predictions)
-    Rk = rk_coeff_tf(C)
-    loss = 1 - Rk
-    loss = tf.cast( loss, tf.float32) # Must cast for autodiff on GPU
-
-    return loss
 
 
 def soft_confusion_matrix_tf(labels, predictions,

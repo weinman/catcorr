@@ -3,7 +3,7 @@
 import tensorflow as tf
 import tensorflow.keras
 
-from catcorr import catcorr
+from catcorr import core
 
 """ For background details, refer to http://rk.kvl.dk and
 
@@ -52,7 +52,7 @@ def rk_coeff(labels, predictions, num_classes,
     #var_collections = [ tf.compat.v1.GraphKeys.LOCAL_VARIABLES,
     #                    tf.compat.v1.GraphKeys.METRIC_VARIABLES ]
     
-    batch_table = catcorr.soft_confusion_matrix_tf(
+    batch_table = core.soft_confusion_matrix_tf(
         labels, predictions, name='rk_coeff/batch_table' )
 
     # After futzing for hours, I could not get a more elegant solution
@@ -83,8 +83,8 @@ def rk_coeff(labels, predictions, num_classes,
     else: # Reset confusion matrix
         update_table_op = tf.compat.v1.assign(table, batch_table)     # := 
 
-    coeff = tf.identity( catcorr.rk_coeff_tf(table), name='rk_coeff/value')
-    update_op = tf.identity( catcorr.rk_coeff_tf(update_table_op),
+    coeff = tf.identity( core.rk_coeff_tf(table), name='rk_coeff/value')
+    update_op = tf.identity( core.rk_coeff_tf(update_table_op),
                              name='rk_coeff/update_op')
     return coeff, update_op
 
@@ -134,6 +134,11 @@ class RkMetric(tf.keras.metrics.Metric):
         return config
 
     
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+    
     def update_state( self, labels, predictions ):
         """ Calculate the batch confusion matrix and add it to the 
         accumulator table.
@@ -147,14 +152,14 @@ class RkMetric(tf.keras.metrics.Metric):
         """
         if self.from_logits:
             predictions = tf.keras.activations.softmax(predictions)
-        batch_table = catcorr.soft_confusion_matrix_tf( labels, predictions )
+        batch_table = core.soft_confusion_matrix_tf( labels, predictions )
         batch_table = tf.cast(batch_table, self.dtype)
         self.table.assign_add(batch_table)
 
         
     def result(self):
         """Give the Rk coefficient"""
-        return catcorr.rk_coeff_tf(self.table)
+        return core.rk_coeff_tf(self.table)
 
 
     def reset_states(self):
