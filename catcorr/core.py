@@ -54,11 +54,10 @@ def soft_confusion_matrix_tf(labels, predictions,
 
     return C
 
-
-def rk_coeff_tf(C):
+def _rk_terms_tf(C):
     """
-    Calculate Gorodkin's R_K Correlation Coefficient from an KxK
-    confusion matrix in TensorFlow.
+    Calculate the numerator and denominator of Gorodkin's R_K Correlation
+    Coefficient from an KxK confusion matrix in TensorFlow.
 
     Preconditions The type of C (if integer) should be large enough to
       prevent overflow when calculating N*N, where N is the total
@@ -70,9 +69,11 @@ def rk_coeff_tf(C):
       C : a KxK confusion matrix Tensor (integer or floating point values)
 
     Returns
-      rk : a scalar Tensor
+      numerator    : a scalar Tensor
+      denominator  : a scalar Tensor
+      denominators : a list of two Tensors containing the two raw denominator 
+                       terms (before multiplying and the square root)
     """
-
     # TODO: throw error if confusion matrix is not square
 
     # Downstream, we will cast to floating point type just in case we were
@@ -107,6 +108,58 @@ def rk_coeff_tf(C):
     # limit precision, it should(?) be slightly more efficient
     denominator = tf.math.sqrt( denominator_1 * denominator_2 )
 
+    denominators = [denominator_1, denominator_2]
+    
+    return numerator, denominator, denominators
+
+def log_rk_coeff_tf(C):
+    """
+    Calculate Gorodkin's R_K Correlation Coefficient from an KxK
+    confusion matrix in TensorFlow.
+
+    Preconditions:
+      1) Rk > 0
+      2) The type of C (if integer) should be large enough to
+      prevent overflow when calculating N*N, where N is the total
+      number of elements represented by the confusion matrix (i.e.,
+      the reduced sum of C).
+    
+
+    Parameters
+      C : a KxK confusion matrix Tensor (integer or floating point values)
+
+    Returns
+      log_rk : a scalar Tensor
+    """
+    numerator, _, denominators =  _rk_terms_tf(C)
+
+    log_top = tf.math.log(numerator)
+    log_bot = (tf.math.log(denominators[0]) + tf.math.log(denominators[1]))/2
+
+    log_rk = log_top - log_bot
+
+    return log_rk
+
+    
+def rk_coeff_tf(C):
+    """
+    Calculate Gorodkin's R_K Correlation Coefficient from an KxK
+    confusion matrix in TensorFlow.
+
+    Preconditions The type of C (if integer) should be large enough to
+      prevent overflow when calculating N*N, where N is the total
+      number of elements represented by the confusion matrix (i.e.,
+      the reduced sum of C).
+    
+
+    Parameters
+      C : a KxK confusion matrix Tensor (integer or floating point values)
+
+    Returns
+      rk : a scalar Tensor
+    """
+
+    numerator, denominator, _ = _rk_terms_tf(C)
 
     # NB: The limit of the original Matthews correlation coefficient
     # (MCC) is zero as each of the terms in that denominator's sums
