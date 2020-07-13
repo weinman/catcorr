@@ -3,7 +3,7 @@
 import tensorflow as tf
 import numpy as np
 import unittest
-import catcorr
+import catcorr.core as catcorr
 
 class TestRkCoeffNumPy(unittest.TestCase):
 
