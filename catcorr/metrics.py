@@ -1,16 +1,25 @@
+# CatCorr
+# Copyright (c) 2020 Jerod Weinman and Nathan Gifford
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # metrics.py - Folderoll (classes, tensors, ops) for metrics supporting Rk
 
 import tensorflow as tf
-import tensorflow.keras
 
 from catcorr import core
 
-""" For background details, refer to http://rk.kvl.dk and
-
-      Gorodkin, J. (2004) Comparing two K-category assignments by a 
-         K-category correlation coefficient. J. Comp. Biol. and Chem.,
-         28:367--374. https://doi.org/10.1016/j.compbiolchem.2004.09.006
-"""
 
 # rk_coeff documentation modeled after tf.compat.v1.metrics.accuracy
 # <https://www.tensorflow.org/api_docs/python/tf/compat/v1/metrics/accuracy>
@@ -20,7 +29,7 @@ from catcorr import core
 def rk_coeff(labels, predictions, num_classes,
              streaming=True,
              name=None):
-    """Calculates Gorodkin's Rk correlation coefficient.
+    """Tensorflow metric calculating Gorodkin's Rk correlation coefficient.
 
     The `rk_coeff` function creates a local variable, `table` to store
     the confusion matrix used to compute the Rk coefficient. That value
@@ -57,7 +66,7 @@ def rk_coeff(labels, predictions, num_classes,
 
     # After futzing for hours, I could not get a more elegant solution
     # inferring the dimensions of batch_table to work with v1-oriented
-    # TF code, (it is a variale initialization issue) which
+    # TF code, (it is a variable initialization issue) which
     # necessitates the num_classes argument to hard code the
     # dimensions
 
@@ -90,13 +99,14 @@ def rk_coeff(labels, predictions, num_classes,
 
 
 class RkMetric(tf.keras.metrics.Metric):
-    """RkMetric: Stores the confusion matrix as table, which can
-    accumulate values with the update_state method, produce the current
-    Rk coefficient with the result method, and reset the confusion matrix
-    accumulator with the reset_states method."""
-
+    """
+    Keras metric for Gorodkin's RK. Stores the confusion matrix as
+    table, which can accumulate values with the update_state method,
+    produce the current Rk coefficient with the result method, and
+    reset the confusion matrix accumulator with the reset_states
+    method.
+    """
     
-
     def __init__(self,
                  num_classes,
                  name: str ='Rk',

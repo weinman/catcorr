@@ -1,3 +1,19 @@
+# CatCorr
+# Copyright (c) 2020 Jerod Weinman and Nathan Gifford
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # core.py - A suite of routines to tabulate soft confusion matrices
 # and correlations for NumPy and Tensorflow
 
@@ -11,7 +27,6 @@
 
 import tensorflow as tf
 import numpy as np
-
 
 
 def soft_confusion_matrix_tf(labels, predictions,
@@ -54,6 +69,7 @@ def soft_confusion_matrix_tf(labels, predictions,
 
     return C
 
+
 def _rk_terms_tf(C):
     """
     Calculate the numerator and denominator of Gorodkin's R_K Correlation
@@ -94,7 +110,7 @@ def _rk_terms_tf(C):
     denominator_1 = Nsq - tf.tensordot(row_sum, row_sum, axes=1)
     denominator_2 = Nsq - tf.tensordot(col_sum, col_sum, axes=1)
 
-    numerator     = tf.dtypes.cast(numerator, float_type)
+    numerator     = tf.dtypes.cast(numerator,     float_type)
     denominator_1 = tf.dtypes.cast(denominator_1, float_type)
     denominator_2 = tf.dtypes.cast(denominator_2, float_type)
     
@@ -112,18 +128,18 @@ def _rk_terms_tf(C):
     
     return numerator, denominator, denominators
 
+
 def log_rk_coeff_tf(C):
     """
     Calculate Gorodkin's R_K Correlation Coefficient from an KxK
     confusion matrix in TensorFlow.
 
     Preconditions:
-      1) Rk > 0
+      1) R_K > 0
       2) The type of C (if integer) should be large enough to
       prevent overflow when calculating N*N, where N is the total
       number of elements represented by the confusion matrix (i.e.,
       the reduced sum of C).
-    
 
     Parameters
       C : a KxK confusion matrix Tensor (integer or floating point values)
@@ -150,7 +166,6 @@ def rk_coeff_tf(C):
       prevent overflow when calculating N*N, where N is the total
       number of elements represented by the confusion matrix (i.e.,
       the reduced sum of C).
-    
 
     Parameters
       C : a KxK confusion matrix Tensor (integer or floating point values)
@@ -171,7 +186,6 @@ def rk_coeff_tf(C):
     rk = tf.math.divide_no_nan( numerator, denominator )
 
     return rk
-
 
 
 def rk_coeff_np(C):

@@ -1,4 +1,20 @@
-# test.py - Run unit tests on the operations
+# CatCorr
+# Copyright (c) 2020 Jerod Weinman and Nathan Gifford
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# test.py - Run unit tests on select operations
 
 import tensorflow as tf
 import numpy as np
@@ -27,7 +43,7 @@ class TestRkCoeffNumPy(unittest.TestCase):
         arange = np.arange(9).reshape((3,3))
         result = catcorr.rk_coeff_np(arange)
         difference = abs(precalculated_result - result)
-        self.assertLess(difference, 0.00000001)
+        self.assertLess(difference, 1e-08)
     
     def test_large_table(self):
         large_table = np.ones((500, 500))
@@ -39,11 +55,12 @@ class TestRkCoeffNumPy(unittest.TestCase):
         arange = np.arange(16, dtype=np.float).reshape((4,4))
         result = catcorr.rk_coeff_np(arange)
         difference = abs(precalculated_result - result)
-        self.assertLess(difference, 0.00000001)
+        self.assertLess(difference, 1e-08)
 
-    # The following values are taken from 'A Comparison of MCC and CEN
-    # Error Measures' by G. Jurman, S. Riccadonna, and C. Furlanello
-    # (2012)
+    # The following values are taken from
+    #   G. Jurman, S. Riccadonna, and C. Furlanello (2012). A Comparison
+    #   of MCC and CEN Error Measures in Multi-Class Prediction. PLoS
+    #   ONE 7(8): e41882. https://doi.org/10.1371/journal.pone.0041882
 
     def test_inv_diagonal(self):
         precalculated_result = -0.333
@@ -81,7 +98,7 @@ class TestRkCoeffTensorFlow(unittest.TestCase):
         arange = tf.constant(np.arange(9, dtype=np.float).reshape((3,3)))
         result = catcorr.rk_coeff_tf(arange)
         difference = abs(precalculated_result - result)
-        self.assertLess(difference, 0.00000001)
+        self.assertLess(difference, 1e-08)
 
     def test_large_table(self):
         large_table = tf.constant(np.ones((500, 500)))
@@ -93,7 +110,7 @@ class TestRkCoeffTensorFlow(unittest.TestCase):
         arange = tf.constant(np.arange(16, dtype=np.float).reshape((4,4)))
         result = catcorr.rk_coeff_tf(arange)
         difference = abs(precalculated_result - result)
-        self.assertLess(difference, 0.00000001)
+        self.assertLess(difference, 1e-08)
 
     # The following values are taken from 'A Comparison of MCC and
     # CEN Error Measures' by G. Jurman, S. Riccadonna, and
