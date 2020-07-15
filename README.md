@@ -10,11 +10,11 @@ correlation coefficient (MCC).
 
 For theoretical details, see the original paper introducing the coefficient:
 
-> Gorodkin, Jan (2004). "Comparing two K-category assignments by a K-category correlation coefficient". Computational Biology and Chemistry. 28 (5): 367–374. doi:[10.1016/j.compbiolchem.2004.09.006](10.1016/j.compbiolchem.2004.09.006). PMID 15556477
+> Gorodkin, Jan (2004). "Comparing two K-category assignments by a K-category correlation coefficient". Computational Biology and Chemistry. 28 (5): 367–374. doi:[10.1016/j.compbiolchem.2004.09.006](https://doi.org/10.1016/j.compbiolchem.2004.09.006). PMID 15556477
 
 Readers may also be interested in Gorodkin's
-[http://rk.kvl.dk/introduction/index.html](RK page), where perl and
-awk implementations are available.
+[RK page](http://rk.kvl.dk/introduction/index.html), where `perl` and
+`awk` implementations are available.
 
 The implementations work with Tensorflow 1.15 or 2.x.
 
@@ -28,7 +28,7 @@ The derivation of R_K begins with the analog form—see Equation (2) in
 Gorodkin (2004).
 
 For discrete classification, Pearson's two-class
-[https://en.wikipedia.org/wiki/Phi_coefficient](phi coefficient) may
+[phi coefficient](https://en.wikipedia.org/wiki/Phi_coefficient) may
 be calculated as
 
 φ = (TP * TN - FP * FN) / √( (TP+FN) * (TP+FP) * (TN+FP) * (TN+FN) ),
@@ -55,7 +55,7 @@ correlation coefficient, or Pearson's φ (phi).
 
 Like Pearson's r and φ (phi), R ∈ [-1,1].
 
-The implementation allows a "soft" confusion matrix
+The implementation allows a "soft" confusion matrix.
 
 ## Usage
 
